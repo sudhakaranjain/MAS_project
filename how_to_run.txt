@@ -1,0 +1,21 @@
+How to run:
+
+*** Requires Python 3.6 ***
+
+- Install virtualenv package:
+	pip install virtualenv
+
+- Navigate to the git repo
+
+- Create virtual environment:
+	virtualenv env
+
+- Activate virtual environment:
+	source env/bin/activate
+
+- Install the required packages:
+	pip install -r requirements.txt
+	source env/bin/activate
+
+- Run the program:
+	python main.py
