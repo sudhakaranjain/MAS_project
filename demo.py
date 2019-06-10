@@ -112,11 +112,12 @@ def perform_Ncounter(n):
 
 	elif state == 1:
 		if selected not in visited:
-			visited.append(selected)
 			if selected == 0:
 				counter = counter + 1
+				visited.append(selected)
 			elif bulb == 0:
 				room.configure(image=on)
+				visited.append(selected)
 				bulb = 1
 
 		if selected == 0:
