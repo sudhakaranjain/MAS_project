@@ -1,12 +1,16 @@
 from tkinter import *
 from PIL import Image, ImageTk
 import math
+import random
+import time
 
 window = Tk()
 window.geometry("1000x700")
 window.title("Demo for n-prisoner & light bulb")
 
-prison_space = {"start_x" : 150, "end_x" : 950, "start_y" : 125, "end_y" : 550}
+state = 0
+
+prison_space = {"start_x" : 150, "end_x" : 950, "start_y" : 150, "end_y" : 550}
 all_prisoners = []
 
 n_fn = StringVar()
@@ -24,6 +28,10 @@ on_img = Image.open("./on.png")
 on_img = on_img.resize((75, 75), Image.ANTIALIAS)
 on = ImageTk.PhotoImage(on_img)
 
+star_img = Image.open("./star.png")
+star_img = star_img.resize((12, 12), Image.ANTIALIAS)
+star = ImageTk.PhotoImage(star_img)
+
 prisoner_img = Image.open("./prisoner.png")
 prisoner_img = prisoner_img.resize((50, 60), Image.ANTIALIAS)
 prisoner = ImageTk.PhotoImage(prisoner_img)
@@ -32,13 +40,19 @@ prisoner_star = Image.open("./counter.png")
 prisoner_star = prisoner_star.resize((50, 60), Image.ANTIALIAS)
 prisoner_counter = ImageTk.PhotoImage(prisoner_star)
 
+prisoner_done_img = Image.open("./done.png")
+prisoner_done_img = prisoner_done_img.resize((50, 60), Image.ANTIALIAS)
+prisoner_done = ImageTk.PhotoImage(prisoner_done_img)
+
+visited = []
+counter = 0
+bulb = 0
 room = Label(window, image=off)
 room.place(x=50,y=250)
 
 def create_prisoners(n):
 	if n <=100:
-		prison = []
-		counter = 0
+		flag = 0
 		rows = columns = math.ceil((math.sqrt(n)))
 		dist_x = (prison_space["end_x"] - prison_space["start_x"]) / rows
 		dist_y = (prison_space["end_y"] - prison_space["start_y"]) / columns
@@ -46,15 +60,15 @@ def create_prisoners(n):
 		for i in range(rows):
 			for j in range(columns):
 				if i==j==0:
-					bad_ppl = Label(window, image=prisoner_counter)
-				else:
-					bad_ppl = Label(window, image=prisoner)
+					star_label = Label(window, image=star)
+					star_label.place(x=prison_space["start_x"]+17+dist_x*j, y=prison_space["start_y"]-15+dist_y*i)
 
+				bad_ppl = Label(window, image=prisoner)
 				bad_ppl.place(x=prison_space["start_x"]+dist_x*j, y=prison_space["start_y"]+dist_y*i)
 				all_prisoners.append(bad_ppl)
-				counter = counter + 1
+				flag = flag + 1
 				
-				if counter == n:
+				if flag == n:
 					break
 			
 			else:
@@ -67,19 +81,65 @@ def create_prisoners(n):
 
 def refresh():
 	global all_prisoners
+	global counter
+	global visited
+	global state
+	state = 0
+	visited = []
+	counter = 0
 	if all_prisoners:
 		for i in range(len(all_prisoners)):
 			all_prisoners[i].destroy()
 		all_prisoners = []
 
+def perform_Ncounter(n):
+	global bulb
+	global visited
+	global counter
+	global selected
+	global state
+	
+	if state == 0:
+		selected = random.randint(0,n-1)
+		all_prisoners[selected].configure(image='')
+		state = 1
+		window.after(1500, perform_Ncounter, n)
+
+	elif state == 1:
+		if selected not in visited:
+			print(selected)
+			if bulb == 0:
+				room.configure(image=on)
+				visited.append(selected)
+				bulb = 1
+
+		if selected == 0:
+			print("counter action")
+			if bulb == 1:
+				counter = counter + 1
+				bulb = 0
+				room.configure(image=off)
+	
+		if counter < n:
+			state = 0
+			window.after(1500, perform_Ncounter, n)	
+		else:
+			print("Done!!")
+
+		all_prisoners[selected].configure(image=prisoner_done)
+
+
 def start():
 	refresh()
 	room.configure(image=off)
-	try:
-		n = int(n_fn.get())
-		create_prisoners(n)
-	except:
-		print("n should be an integer")
+	n = int(n_fn.get())
+	create_prisoners(n)
+	window.after(1500, perform_Ncounter, n)
+	# try:
+
+	# 	# perform_improved()
+	# except:
+	# 	print("n should be an integer")
 
 def end():
 	exit()
