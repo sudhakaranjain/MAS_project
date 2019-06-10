@@ -50,6 +50,9 @@ bulb = 0
 room = Label(window, image=off)
 room.place(x=50,y=250)
 
+counter_value = Label(window, text="Counter: "+str(counter), font=("bold", 15))
+counter_value.place(x=575, y=75)
+
 def create_prisoners(n):
 	if n <=100:
 		flag = 0
@@ -84,9 +87,11 @@ def refresh():
 	global counter
 	global visited
 	global state
+	global counter_value
 	state = 0
 	visited = []
 	counter = 0
+	counter_value.configure(text="Counter: "+str(counter))
 	if all_prisoners:
 		for i in range(len(all_prisoners)):
 			all_prisoners[i].destroy()
@@ -107,23 +112,26 @@ def perform_Ncounter(n):
 
 	elif state == 1:
 		if selected not in visited:
-			print(selected)
-			if bulb == 0:
+			visited.append(selected)
+			if selected == 0:
+				counter = counter + 1
+			elif bulb == 0:
 				room.configure(image=on)
-				visited.append(selected)
 				bulb = 1
 
 		if selected == 0:
-			print("counter action")
 			if bulb == 1:
 				counter = counter + 1
 				bulb = 0
 				room.configure(image=off)
-	
+
+		counter_value.configure(text="Counter: "+str(counter))
+
 		if counter < n:
 			state = 0
 			window.after(1500, perform_Ncounter, n)	
 		else:
+			counter_value.configure(text="Counter: "+str(counter)+" Finished!!!")
 			print("Done!!")
 
 		all_prisoners[selected].configure(image=prisoner_done)
