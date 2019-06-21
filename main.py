@@ -24,13 +24,22 @@ class Demo():
 		self.n_value = Entry(self.window, width=10, relief="solid", textvar=self.n_fn)
 		self.n_value.place(x=375,y=75)
 
+		self.v = IntVar()
+		self.v.set(1)
+		self.strat_radio1 = Radiobutton(self.window, text="Strategy 1", variable=self.v, value=1)
+		self.strat_radio1.place(x=370,y=100)
+		self.strat_radio2 = Radiobutton(self.window, text="Strategy 2", variable=self.v, value=2)
+		self.strat_radio2.place(x=370,y=120)
+
 		self.visited = []
+		self.done = []
 		self.counter = 0
+		self.all_counters = []
 		self.bulb = 0
 		self.room = Label(self.window, image=self.off)
 		self.room.place(x=50,y=250)
 
-		self.counter_value = Label(self.window, text="Counter: "+str(self.counter), font=("bold", 15))
+		self.counter_value = Label(self.window, text="Global Counter: "+str(self.counter), font=("bold", 15))
 		self.counter_value.place(x=575, y=75)
 		
 		self.s_button = Button(self.window, text="Start", fg="black", bg="brown", command=self.start, relief=GROOVE, font=("ariel",12,"bold")).place(x=300,y=600)
@@ -64,7 +73,7 @@ class Demo():
 		self.prisoner_done_img = self.prisoner_done_img.resize((50, 60), Image.ANTIALIAS)
 		self.prisoner_done = ImageTk.PhotoImage(self.prisoner_done_img)
 
-	def create_prisoners(self, n):
+	def create_prisoners(self, n, strat):
 		if n <=100:
 			flag = 0
 			rows = columns = math.ceil((math.sqrt(n)))
@@ -76,6 +85,11 @@ class Demo():
 					if i==j==0:
 						star_label = Label(self.window, image=self.star)
 						star_label.place(x=self.prison_space["start_x"]+17+dist_x*j, y=self.prison_space["start_y"]-15+dist_y*i)
+
+					if strat == 2:
+						c = Label(self.window, text=str(0), font=("bold", 15))
+						c.place(x=self.prison_space["start_x"]-15+dist_x*j, y=self.prison_space["start_y"]+17+dist_y*i)
+						self.all_counters.append([c,0,0])
 
 					bad_ppl = Label(self.window, image=self.prisoner)
 					bad_ppl.place(x=self.prison_space["start_x"]+dist_x*j, y=self.prison_space["start_y"]+dist_y*i)
@@ -96,13 +110,20 @@ class Demo():
 	def refresh(self):
 		self.state = 0
 		self.visited = []
+		self.done = []
+		self.done.append(0)
 		self.counter = 0
 		self.selected = 0
-		self.counter_value.configure(text="Counter: "+str(self.counter))
+		self.counter_value.configure(text="Global Counter: "+str(self.counter))
 		if self.all_prisoners:
 			for i in range(len(self.all_prisoners)):
 				self.all_prisoners[i].destroy()
 			self.all_prisoners = []
+
+		if self.all_counters:
+			for i in range(len(self.all_counters)):
+				self.all_counters[i][0].destroy()
+			self.all_counters = []
 
 	def perform_Ncounter(self, n):
 
@@ -128,29 +149,73 @@ class Demo():
 					self.bulb = 0
 					self.room.configure(image=self.off)
 
-			self.counter_value.configure(text="Counter: "+str(self.counter))
+			self.counter_value.configure(text="Global Counter: "+str(self.counter))
 
 			if self.counter < n:
 				self.state = 0
 				self.window.after(1500, self.perform_Ncounter, n)	
 			else:
-				self.counter_value.configure(text="Counter: "+str(self.counter)+" Finished!!!")
-				print("Done!!")
+				self.counter_value.configure(text="Global Counter: "+str(self.counter)+" Finished!!!")
 			
 			self.all_prisoners[self.selected].configure(image=self.prisoner_done)
+
+	def perform_improved(self, n):
+
+		if self.state == 0:
+			self.selected = random.randint(0,n-1)
+			self.all_prisoners[self.selected].configure(image='')
+			self.state = 1
+			self.window.after(1500, self.perform_improved, n)
+
+		elif self.state == 1:
+			[label,pc,prev_state] = self.all_counters[self.selected]
+
+			if self.selected not in self.visited:
+				pc = pc + 1
+				self.visited.append(self.selected)
+
+			if self.bulb == 1:
+				if self.selected == 0:
+					pc = pc + 1
+					self.bulb = 0
+					self.room.configure(image=self.off)
+				elif prev_state == 0:
+					pc = pc + 1
+			elif self.selected not in self.done:
+				self.room.configure(image=self.on)
+				self.done.append(self.selected)
+				self.bulb = 1
+
+			prev_state = self.bulb
+			label.configure(text=str(pc))
+			self.all_counters[self.selected] = [label,pc,prev_state]
+			self.counter_value.configure(text="Global Counter: "+str(self.all_counters[0][1]))
+
+			if pc < n:
+				self.state = 0
+				self.window.after(1500, self.perform_improved, n)
+			else:
+				self.counter_value.configure(text="Prisoner "+str(self.selected+1)+" has announced it!!!")
+			
+			self.all_prisoners[self.selected].configure(image=self.prisoner_done)
+
 
 	def start(self):
 		self.refresh()
 		self.room.configure(image=self.off)
 
-		try:
-			n = int(self.n_fn.get())
-			self.create_prisoners(n)
-			self.window.after(1500, self.perform_Ncounter, n)
+		# try:
+		n = int(self.n_fn.get())
+		strategy = self.v.get()
+		self.create_prisoners(n,strategy)
 
-			# perform_improved()
-		except:
-			print("Enter a valid value for n")
+		if strategy == 1:
+			self.window.after(1500, self.perform_Ncounter, n)
+		elif strategy == 2:
+			self.window.after(1500, self.perform_improved, n)
+
+		# except:
+		# 	print("Enter a valid value for n")
 
 	def end(self):
 		exit()
