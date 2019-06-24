@@ -190,32 +190,39 @@ class Demo():
 			[label,pc,prev_state] = self.all_counters[self.selected]
 
 			if self.selected not in self.visited:
-				pc = pc + 1
-				self.visited.append(self.selected)
-
-			if self.bulb == 1:
 				if self.selected == 0:
+					self.visited.append(self.selected)
+				elif self.bulb == 0:
+					pc = pc + 1
+					self.room.configure(image=self.on)
+					self.visited.append(self.selected)
+					self.bulb = 1
+				elif self.bulb == 1:
+					if prev_state == 0:
+						pc = pc + 1
+			elif self.bulb == 1:
+				if self.selected !=0:
+					if prev_state == 0:
+						pc = pc + 1
+
+			if self.selected == 0:
+				if self.bulb == 1:
 					pc = pc + 1
 					self.bulb = 0
 					self.room.configure(image=self.off)
-				elif prev_state == 0:
-					pc = pc + 1
-			elif self.selected not in self.done:
-				self.room.configure(image=self.on)
-				self.done.append(self.selected)
-				self.bulb = 1
+
 
 			prev_state = self.bulb
 			label.configure(text=str(pc))
 			self.all_counters[self.selected] = [label,pc,prev_state]
 			self.counter_value.configure(text="Global Counter: "+str(self.all_counters[0][1]))
 
-			if pc < n:
+			if pc < n - 1:
 				self.state = 0
-				self.window.after(self.interval.get(), self.perform_improved, n)
+				self.window.after(self.interval.get(), self.perform_improved, n)				
 			else:
 				self.counter_value.configure(text="Prisoner "+str(self.selected+1)+" has made the announcement, everyone is free!!")
-			
+						
 			self.all_prisoners[self.selected].configure(image=self.prisoner_done)
 
 
