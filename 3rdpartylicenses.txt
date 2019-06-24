@@ -87,6 +87,9 @@ THE SOFTWARE.
 ng2-pdf-viewer
 MIT
 
+ng2-pdfjs-viewer
+MIT
+
 ngx-bootstrap/component-loader
 
 ngx-bootstrap/dropdown
