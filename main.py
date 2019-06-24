@@ -230,18 +230,17 @@ class Demo():
 		self.refresh()
 		self.room.configure(image=self.off)
 
-		# try:
-		n = int(self.n_fn.get())
-		strategy = self.v.get()
-		self.create_prisoners(n,strategy)
+		try:
+			n = int(self.n_fn.get())
+			strategy = self.v.get()
+			self.create_prisoners(n,strategy)
 
-		if strategy == 1:
-			self.window.after(self.interval.get(), self.perform_Ncounter, n)
-		elif strategy == 2:
-			self.window.after(self.interval.get(), self.perform_improved, n)
-
-		# except:
-		# 	print("Enter a valid value for n")
+			if strategy == 1:
+				self.window.after(self.interval.get(), self.perform_Ncounter, n)
+			elif strategy == 2:
+				self.window.after(self.interval.get(), self.perform_improved, n)
+		except:
+			print("Enter a valid value for n")
 
 	def end(self):
 		exit()
