@@ -31,13 +31,28 @@ class Demo():
 		self.strat_radio2 = Radiobutton(self.window, text="Strategy 2", variable=self.v, value=2)
 		self.strat_radio2.place(x=370,y=120)
 
+		self.interval = IntVar()
+		self.interval.set(1500)
+		self.strat_radio1 = Radiobutton(self.window, text="Slow", variable=self.interval, value=3000)
+		self.strat_radio1.place(x=300,y=560)
+		self.strat_radio2 = Radiobutton(self.window, text="Normal", variable=self.interval, value=1500)
+		self.strat_radio2.place(x=400,y=560)
+		self.strat_radio2 = Radiobutton(self.window, text="Fast", variable=self.interval, value=750)
+		self.strat_radio2.place(x=500,y=560)
+		self.strat_radio2 = Radiobutton(self.window, text="Crazy fast", variable=self.interval, value=50)
+		self.strat_radio2.place(x=600,y=560)
+
 		self.visited = []
 		self.done = []
 		self.counter = 0
+		self.days = 0
 		self.all_counters = []
 		self.bulb = 0
 		self.room = Label(self.window, image=self.off)
 		self.room.place(x=50,y=250)
+
+		self.days_passed = Label(self.window, text="Days passed: "+str(self.days), font=("bold", 15))
+		self.days_passed.place(x=575, y=100)
 
 		self.counter_value = Label(self.window, text="Global Counter: "+str(self.counter), font=("bold", 15))
 		self.counter_value.place(x=575, y=75)
@@ -114,6 +129,8 @@ class Demo():
 		self.done.append(0)
 		self.counter = 0
 		self.selected = 0
+		self.days = 0
+		self.days_passed.configure(text="Days passed: "+str(self.days))
 		self.counter_value.configure(text="Global Counter: "+str(self.counter))
 		if self.all_prisoners:
 			for i in range(len(self.all_prisoners)):
@@ -126,12 +143,13 @@ class Demo():
 			self.all_counters = []
 
 	def perform_Ncounter(self, n):
-
 		if self.state == 0:
 			self.selected = random.randint(0,n-1)
 			self.all_prisoners[self.selected].configure(image='')
 			self.state = 1
-			self.window.after(1500, self.perform_Ncounter, n)
+			self.days += 1
+			self.days_passed.configure(text="Days passed: "+str(self.days))
+			self.window.after(self.interval.get(), self.perform_Ncounter, n)
 
 		elif self.state == 1:
 			if self.selected not in self.visited:
@@ -153,19 +171,20 @@ class Demo():
 
 			if self.counter < n:
 				self.state = 0
-				self.window.after(1500, self.perform_Ncounter, n)	
+				self.window.after(self.interval.get(), self.perform_Ncounter, n)	
 			else:
 				self.counter_value.configure(text="Global Counter: "+str(self.counter)+" Finished!!!")
 			
 			self.all_prisoners[self.selected].configure(image=self.prisoner_done)
 
 	def perform_improved(self, n):
-
 		if self.state == 0:
 			self.selected = random.randint(0,n-1)
 			self.all_prisoners[self.selected].configure(image='')
 			self.state = 1
-			self.window.after(1500, self.perform_improved, n)
+			self.days += 1
+			self.days_passed.configure(text="Days passed: "+str(self.days))
+			self.window.after(self.interval.get(), self.perform_improved, n)
 
 		elif self.state == 1:
 			[label,pc,prev_state] = self.all_counters[self.selected]
@@ -193,9 +212,9 @@ class Demo():
 
 			if pc < n:
 				self.state = 0
-				self.window.after(1500, self.perform_improved, n)
+				self.window.after(self.interval.get(), self.perform_improved, n)
 			else:
-				self.counter_value.configure(text="Prisoner "+str(self.selected+1)+" has announced it!!!")
+				self.counter_value.configure(text="Prisoner "+str(self.selected+1)+" has made the announcement, everyone is free!!")
 			
 			self.all_prisoners[self.selected].configure(image=self.prisoner_done)
 
@@ -210,9 +229,9 @@ class Demo():
 		self.create_prisoners(n,strategy)
 
 		if strategy == 1:
-			self.window.after(1500, self.perform_Ncounter, n)
+			self.window.after(self.interval.get(), self.perform_Ncounter, n)
 		elif strategy == 2:
-			self.window.after(1500, self.perform_improved, n)
+			self.window.after(self.interval.get(), self.perform_improved, n)
 
 		# except:
 		# 	print("Enter a valid value for n")
